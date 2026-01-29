@@ -16,14 +16,14 @@ import {
 const roleRoutes: Record<UserRole, { label: string; path: string; icon: React.ComponentType<{ className?: string }> }[]> = {
   superadmin: [
     { label: "Dashboard", path: "/dashboard/superadmin", icon: LayoutDashboard },
-    { label: "Users", path: "/users", icon: Users },
+    { label: "Users", path: "/dashboard/users", icon: Users },
     { label: "Employees", path: "/employees", icon: UserCheck },
     { label: "Payroll", path: "/payroll", icon: DollarSign },
     { label: "Payslips", path: "/payslips", icon: FileText },
   ],
   admin: [
     { label: "Dashboard", path: "/dashboard/admin", icon: LayoutDashboard },
-    { label: "Users", path: "/users", icon: Users },
+    { label: "Users", path: "/dashboard/users", icon: Users },
     { label: "Employees", path: "/employees", icon: UserCheck },
     { label: "Payroll", path: "/payroll", icon: DollarSign },
     { label: "Payslips", path: "/payslips", icon: FileText },
@@ -50,8 +50,11 @@ export function Sidebar() {
   const routes = roleRoutes[user.role] || []
 
   return (
-    <aside className="w-64 border-none shadown-sm bg-background">
-      <nav className="flex flex-col gap-1 p-4">
+    <aside className="w-full p-4 min-h-screen border-none shadow-sm bg-background sticky top-0">
+       <Link href="/" className="text-xl mb-8 pt-4 font-bold">
+          HRMS
+        </Link>
+      <nav className="flex flex-col pt-12 gap-1">
         {routes.map((route) => {
           const Icon = route.icon
           const isActive = pathname === route.path || pathname.startsWith(route.path + "/")

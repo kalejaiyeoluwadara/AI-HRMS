@@ -22,7 +22,7 @@ export function Navbar() {
   return (
     <nav className="border-none shadow-sm bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="text-xl font-bold">
+        <Link href="/" className="text-xl invisible font-bold">
           HRMS
         </Link>
         <div className="flex items-center gap-4">

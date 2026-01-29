@@ -55,7 +55,7 @@ export default function NewEmployeePage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
+    <ProtectedRoute allowedRoles={["admin","superadmin"]}>
       <div className="container mx-auto p-6 max-w-2xl">
         <div className="mb-4">
           <Link href="/employees">
@@ -66,7 +66,7 @@ export default function NewEmployeePage() {
           </Link>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Add New Employee</CardTitle>
             <CardDescription>Enter employee information</CardDescription>

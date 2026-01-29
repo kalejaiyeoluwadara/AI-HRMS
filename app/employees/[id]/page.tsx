@@ -12,6 +12,7 @@ import { employeeApi } from "@/lib/api"
 import { toast } from "sonner"
 import { Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { Oval } from "react-loader-spinner"
 
 export default function EditEmployeePage() {
   const router = useRouter()
@@ -86,15 +87,15 @@ export default function EditEmployeePage() {
 
   if (loadingData) {
     return (
-      <div className="container mx-auto p-6">
-        <p>Loading...</p>
+      <div className="w-full flex items-center mt-10 justify-center p-6">
+        <Oval color="hsl(var(--primary))" secondaryColor="hsl(var(--secondary))" height={40} width={40} ariaLabel="oval-loading" />
       </div>
     )
   }
 
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
-      <div className="container mx-auto p-6 max-w-2xl">
+    <ProtectedRoute allowedRoles={["admin","superadmin"]}>
+      <div className="w-full p-6">
         <div className="mb-4">
           <Link href="/employees">
             <Button variant="ghost" size="sm">
@@ -104,7 +105,7 @@ export default function EditEmployeePage() {
           </Link>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Edit Employee</CardTitle>
             <CardDescription>Update employee information</CardDescription>

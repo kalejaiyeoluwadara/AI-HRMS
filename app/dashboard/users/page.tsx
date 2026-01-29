@@ -122,7 +122,7 @@ export default function UsersPage() {
           </Button>
         </div>
 
-        <Card>
+        <Card className="border-none  shadow-sm">
           <CardHeader>
             <CardTitle>Users</CardTitle>
             <CardDescription>All system users</CardDescription>

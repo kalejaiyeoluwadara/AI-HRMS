@@ -73,7 +73,7 @@ export default function EmployeesPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
+    <ProtectedRoute allowedRoles={["admin","superadmin"]}>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -88,7 +88,7 @@ export default function EmployeesPage() {
           </Link>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Employee List</CardTitle>
             <CardDescription>Search and manage employees</CardDescription>
