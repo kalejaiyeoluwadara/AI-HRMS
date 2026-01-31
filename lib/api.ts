@@ -348,6 +348,8 @@ export const payslipApi = {
     await delay();
     
     const user = getStoredUser();
+    console.log("👤 Current user:", user);
+    
     if (!user) {
       return {
         success: false,
@@ -357,8 +359,15 @@ export const payslipApi = {
     }
 
     // Find employee by email (assuming email matches)
-    const employee = mockDataStore.getEmployees().find((e) => e.email === user.email);
+    const allEmployees = mockDataStore.getEmployees();
+    console.log("👥 All employees in storage:", allEmployees.length, allEmployees.map(e => ({ id: e.id, email: e.email, name: e.name })));
+    
+    const employee = allEmployees.find((e) => e.email === user.email);
+    console.log("🔍 Looking for employee with email:", user.email);
+    console.log("✓ Found employee:", employee);
+    
     if (!employee) {
+      console.warn("⚠️ No employee record found for user:", user.email);
       return {
         success: true,
         data: [],
@@ -366,7 +375,13 @@ export const payslipApi = {
       };
     }
 
+    const allPayslips = mockDataStore.getPayslips();
+    console.log("📋 Total payslips in storage:", allPayslips.length);
+    console.log("📋 Sample payslip IDs:", allPayslips.slice(0, 3).map(p => ({ id: p.id, empId: p.employeeId, name: p.employeeName })));
+    
     const payslips = mockDataStore.getPayslipsByEmployeeId(employee.id);
+    console.log(`✅ Found ${payslips.length} payslips for employee ${employee.id} (${employee.name})`);
+    
     return {
       success: true,
       data: payslips,

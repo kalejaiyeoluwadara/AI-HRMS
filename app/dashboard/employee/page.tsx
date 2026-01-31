@@ -35,11 +35,32 @@ export default function EmployeeDashboard() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
+
+  const statsCards = [
+    {
+      title: "Total Payslips",
+      value: payslips.length,
+      description: "Available payslips",
+      icon: FileText,
+    },
+    {
+      title: "Latest Net Pay",
+      value: payslips.length > 0 ? formatCurrency(payslips[0].netPay) : "$0.00",
+      description: "Most recent payslip",
+      icon: DollarSign,
+    },
+    {
+      title: "This Month",
+      value: new Date().toLocaleString("default", { month: "long" }),
+      description: "Current month",
+      icon: Calendar,
+    },
+  ]
 
   return (
     <ProtectedRoute allowedRoles={["employee"]}>
@@ -50,45 +71,24 @@ export default function EmployeeDashboard() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Payslips</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{payslips.length}</div>
-              <p className="text-xs text-muted-foreground">Available payslips</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Latest Net Pay</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {payslips.length > 0 ? formatCurrency(payslips[0].netPay) : "$0.00"}
-              </div>
-              <p className="text-xs text-muted-foreground">Most recent payslip</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {new Date().toLocaleString("default", { month: "long" })}
-              </div>
-              <p className="text-xs text-muted-foreground">Current month</p>
-            </CardContent>
-          </Card>
+          {statsCards.map((card, index) => {
+            const Icon = card.icon
+            return (
+              <Card key={index} className="border-none shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{card.value}</div>
+                  <p className="text-xs text-muted-foreground">{card.description}</p>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

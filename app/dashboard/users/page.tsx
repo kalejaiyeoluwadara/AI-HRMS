@@ -30,6 +30,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export default function UsersPage() {
   const currentUser = getStoredUser()
@@ -38,6 +39,10 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [createLoading, setCreateLoading] = useState(false)
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({
+    open: false,
+    id: null,
+  })
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -82,11 +87,11 @@ export default function UsersPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return
+  const handleDelete = async () => {
+    if (!deleteDialog.id) return
 
     try {
-      const response = await userApi.delete(id)
+      const response = await userApi.delete(deleteDialog.id)
       if (response.success) {
         toast.success("User deleted successfully")
         loadUsers()
@@ -95,6 +100,8 @@ export default function UsersPage() {
       }
     } catch (error) {
       toast.error("Failed to delete user")
+    } finally {
+      setDeleteDialog({ open: false, id: null })
     }
   }
 
@@ -183,7 +190,7 @@ export default function UsersPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleDelete(user.id)}
+                                  onClick={() => setDeleteDialog({ open: true, id: user.id })}
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -264,6 +271,17 @@ export default function UsersPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <ConfirmDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) => setDeleteDialog({ open, id: null })}
+          onConfirm={handleDelete}
+          title="Delete User"
+          description="Are you sure you want to delete this user? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+        />
       </div>
     </ProtectedRoute>
   )
