@@ -48,14 +48,14 @@ export default function MyPayslipsPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
 
   return (
-    <ProtectedRoute allowedRoles={["employee"]}>
+    <ProtectedRoute allowedRoles={["employee","superadmin"]}>
       <div className="container mx-auto p-6 space-y-6">
         <div>
           <h1 className="text-3xl font-bold">My Payslips</h1>
@@ -98,7 +98,7 @@ export default function MyPayslipsPage() {
                       <span className="text-muted-foreground">Deductions:</span>
                       <span className="font-medium">{formatCurrency(payslip.deductions)}</span>
                     </div>
-                    <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                    <div className="flex justify-between text-lg font-bold pt-2 border-none">
                       <span>Net Pay:</span>
                       <span>{formatCurrency(payslip.netPay)}</span>
                     </div>

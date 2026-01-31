@@ -43,9 +43,9 @@ export default function PayrollPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
 
@@ -70,7 +70,7 @@ export default function PayrollPage() {
   const canRun = user?.role === "payroll_officer" || user?.role === "admin"
 
   return (
-    <ProtectedRoute allowedRoles={["admin", "payroll_officer"]}>
+    <ProtectedRoute allowedRoles={["admin", "payroll_officer","superadmin"]}>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -84,7 +84,7 @@ export default function PayrollPage() {
           )}
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Payroll Runs</CardTitle>
             <CardDescription>View and manage all payroll runs</CardDescription>

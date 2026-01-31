@@ -61,9 +61,9 @@ export default function PayslipDetailPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
 
@@ -87,8 +87,8 @@ export default function PayslipDetailPage() {
   const backUrl = isEmployee ? "/payslips/my" : "/payslips"
 
   return (
-    <ProtectedRoute allowedRoles={["admin", "payroll_officer", "employee"]}>
-      <div className="container mx-auto p-6 max-w-3xl space-y-6">
+    <ProtectedRoute allowedRoles={["admin", "payroll_officer", "employee","superadmin"]}>
+      <div className="w-full p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <Link href={backUrl}>
@@ -111,7 +111,7 @@ export default function PayslipDetailPage() {
           </Button>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Employee Information</CardTitle>
           </CardHeader>
@@ -136,7 +136,7 @@ export default function PayslipDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Salary Breakdown</CardTitle>
           </CardHeader>
@@ -158,7 +158,7 @@ export default function PayslipDetailPage() {
                   -{formatCurrency(payslip.deductions)}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-4 border-t-2 mt-2">
+              <div className="flex justify-between items-center py-4 border-none mt-2">
                 <span className="font-bold text-xl">Net Pay:</span>
                 <span className="font-bold text-2xl">{formatCurrency(payslip.netPay)}</span>
               </div>

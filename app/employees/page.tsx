@@ -19,11 +19,16 @@ import { Plus, Search, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import type { Employee } from "@/types"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({
+    open: false,
+    id: null,
+  })
 
   useEffect(() => {
     loadEmployees()
@@ -42,11 +47,11 @@ export default function EmployeesPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this employee?")) return
+  const handleDelete = async () => {
+    if (!deleteDialog.id) return
 
     try {
-      const response = await employeeApi.delete(id)
+      const response = await employeeApi.delete(deleteDialog.id)
       if (response.success) {
         toast.success("Employee deleted successfully")
         loadEmployees()
@@ -55,6 +60,8 @@ export default function EmployeesPage() {
       }
     } catch (error) {
       toast.error("Failed to delete employee")
+    } finally {
+      setDeleteDialog({ open: false, id: null })
     }
   }
 
@@ -66,9 +73,9 @@ export default function EmployeesPage() {
   )
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
 
@@ -153,7 +160,7 @@ export default function EmployeesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDelete(employee.id)}
+                              onClick={() => setDeleteDialog({ open: true, id: employee.id })}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -167,6 +174,17 @@ export default function EmployeesPage() {
             )}
           </CardContent>
         </Card>
+
+        <ConfirmDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) => setDeleteDialog({ open, id: null })}
+          onConfirm={handleDelete}
+          title="Delete Employee"
+          description="Are you sure you want to delete this employee? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+        />
       </div>
     </ProtectedRoute>
   )

@@ -57,21 +57,21 @@ export default function PayslipsPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
 
   return (
-    <ProtectedRoute allowedRoles={["admin", "payroll_officer"]}>
+    <ProtectedRoute allowedRoles={["admin", "payroll_officer","superadmin"]}>
       <div className="container mx-auto p-6 space-y-6">
         <div>
           <h1 className="text-3xl font-bold">All Payslips</h1>
           <p className="text-muted-foreground">View and manage all payslips</p>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Payslip List</CardTitle>
             <CardDescription>All generated payslips</CardDescription>

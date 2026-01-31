@@ -21,6 +21,8 @@ import { ArrowLeft, AlertCircle, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
 import { getStoredUser } from "@/lib/auth"
 import type { PayrollRun, PayrollDetail } from "@/types"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { InputDialog } from "@/components/ui/input-dialog"
 
 export default function PayrollDetailPage() {
   const router = useRouter()
@@ -31,6 +33,8 @@ export default function PayrollDetailPage() {
   const [details, setDetails] = useState<PayrollDetail[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [approveDialog, setApproveDialog] = useState(false)
+  const [rejectDialog, setRejectDialog] = useState(false)
 
   useEffect(() => {
     loadPayroll()
@@ -52,8 +56,6 @@ export default function PayrollDetailPage() {
   }
 
   const handleApprove = async () => {
-    if (!confirm("Are you sure you want to approve this payroll?")) return
-
     setActionLoading(true)
     try {
       const response = await payrollApi.approve(id)
@@ -67,13 +69,11 @@ export default function PayrollDetailPage() {
       toast.error(error.response?.data?.message || "An error occurred")
     } finally {
       setActionLoading(false)
+      setApproveDialog(false)
     }
   }
 
-  const handleReject = async () => {
-    const reason = prompt("Please provide a reason for rejection:")
-    if (!reason) return
-
+  const handleReject = async (reason: string) => {
     setActionLoading(true)
     try {
       const response = await payrollApi.reject(id, reason)
@@ -87,13 +87,14 @@ export default function PayrollDetailPage() {
       toast.error(error.response?.data?.message || "An error occurred")
     } finally {
       setActionLoading(false)
+      setRejectDialog(false)
     }
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount)
   }
 
@@ -112,7 +113,7 @@ export default function PayrollDetailPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={["admin", "payroll_officer"]}>
+    <ProtectedRoute allowedRoles={["admin", "payroll_officer","superadmin"]}>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -132,11 +133,11 @@ export default function PayrollDetailPage() {
           </div>
           {canApprove && (
             <div className="flex gap-2">
-              <Button onClick={handleApprove} disabled={actionLoading}>
+              <Button onClick={() => setApproveDialog(true)} disabled={actionLoading}>
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve
               </Button>
-              <Button variant="destructive" onClick={handleReject} disabled={actionLoading}>
+              <Button variant="destructive" onClick={() => setRejectDialog(true)} disabled={actionLoading}>
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
               </Button>
@@ -145,7 +146,7 @@ export default function PayrollDetailPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
               <CardTitle className="text-sm font-medium">Status</CardTitle>
             </CardHeader>
@@ -163,7 +164,7 @@ export default function PayrollDetailPage() {
               </Badge>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
               <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
             </CardHeader>
@@ -171,7 +172,7 @@ export default function PayrollDetailPage() {
               <div className="text-2xl font-bold">{payroll.totalEmployees}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
               <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
             </CardHeader>
@@ -179,7 +180,7 @@ export default function PayrollDetailPage() {
               <div className="text-2xl font-bold">{formatCurrency(payroll.totalAmount)}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
               <CardTitle className="text-sm font-medium">Anomalies</CardTitle>
             </CardHeader>
@@ -208,7 +209,7 @@ export default function PayrollDetailPage() {
           </Alert>
         )}
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Payroll Details</CardTitle>
             <CardDescription>Breakdown by employee</CardDescription>
@@ -251,6 +252,33 @@ export default function PayrollDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        <ConfirmDialog
+          open={approveDialog}
+          onOpenChange={setApproveDialog}
+          onConfirm={handleApprove}
+          title="Approve Payroll"
+          description="Are you sure you want to approve this payroll? This will finalize the payroll run."
+          confirmText="Approve"
+          cancelText="Cancel"
+          variant="success"
+          loading={actionLoading}
+        />
+
+        <InputDialog
+          open={rejectDialog}
+          onOpenChange={setRejectDialog}
+          onSubmit={handleReject}
+          title="Reject Payroll"
+          description="Please provide a reason for rejecting this payroll."
+          label="Rejection Reason"
+          placeholder="Enter rejection reason..."
+          confirmText="Reject"
+          cancelText="Cancel"
+          loading={actionLoading}
+          multiline
+          required
+        />
       </div>
     </ProtectedRoute>
   )
