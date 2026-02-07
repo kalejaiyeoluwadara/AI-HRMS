@@ -1,4 +1,4 @@
-import type { User, Employee, PayrollRun, PayrollDetail, Payslip } from "@/types";
+import type { User, Employee, PayrollRun, PayrollDetail, Payslip, Grade, AllowanceType, DeductionType } from "@/types";
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -6,6 +6,9 @@ const STORAGE_KEYS = {
   EMPLOYEES: "hrms_mock_employees",
   PAYROLL_RUNS: "hrms_mock_payroll_runs",
   PAYSLIPS: "hrms_mock_payslips",
+  GRADES: "hrms_mock_grades",
+  ALLOWANCES: "hrms_mock_allowances",
+  DEDUCTIONS: "hrms_mock_deductions",
 } as const;
 
 // Helper functions for localStorage
@@ -223,6 +226,114 @@ const initializeMockData = () => {
     });
     setStorage(STORAGE_KEYS.PAYSLIPS, defaultPayslips);
   }
+
+  // Initialize grades
+  if (!localStorage.getItem(STORAGE_KEYS.GRADES)) {
+    const defaultGrades: Grade[] = [
+      {
+        id: "grade-1",
+        name: "Junior",
+        description: "Entry level positions",
+        minSalary: 40000,
+        maxSalary: 60000,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+      {
+        id: "grade-2",
+        name: "Mid-Level",
+        description: "Experienced professionals",
+        minSalary: 60000,
+        maxSalary: 90000,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+      {
+        id: "grade-3",
+        name: "Senior",
+        description: "Senior level positions",
+        minSalary: 90000,
+        maxSalary: 130000,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+    ];
+    setStorage(STORAGE_KEYS.GRADES, defaultGrades);
+  }
+
+  // Initialize allowances
+  if (!localStorage.getItem(STORAGE_KEYS.ALLOWANCES)) {
+    const defaultAllowances: AllowanceType[] = [
+      {
+        id: "allow-1",
+        name: "Housing Allowance",
+        description: "Monthly housing support",
+        type: "fixed",
+        amount: 1000,
+        isActive: true,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+      {
+        id: "allow-2",
+        name: "Transport Allowance",
+        description: "Transportation support",
+        type: "fixed",
+        amount: 500,
+        isActive: true,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+      {
+        id: "allow-3",
+        name: "Performance Bonus",
+        description: "Performance-based bonus",
+        type: "percentage",
+        amount: 10,
+        isActive: true,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+    ];
+    setStorage(STORAGE_KEYS.ALLOWANCES, defaultAllowances);
+  }
+
+  // Initialize deductions
+  if (!localStorage.getItem(STORAGE_KEYS.DEDUCTIONS)) {
+    const defaultDeductions: DeductionType[] = [
+      {
+        id: "deduct-1",
+        name: "Tax",
+        description: "Income tax deduction",
+        type: "percentage",
+        amount: 15,
+        isActive: true,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+      {
+        id: "deduct-2",
+        name: "Health Insurance",
+        description: "Monthly health insurance premium",
+        type: "fixed",
+        amount: 300,
+        isActive: true,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+      {
+        id: "deduct-3",
+        name: "Pension",
+        description: "Retirement fund contribution",
+        type: "percentage",
+        amount: 5,
+        isActive: true,
+        createdAt: new Date(2025, 0, 1).toISOString(),
+        updatedAt: new Date(2025, 0, 1).toISOString(),
+      },
+    ];
+    setStorage(STORAGE_KEYS.DEDUCTIONS, defaultDeductions);
+  }
 };
 
 // Default demo employee (employee@hrms.com) - always ensure this exists for "My Payslips"
@@ -369,6 +480,9 @@ export const resetMockData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.EMPLOYEES);
   localStorage.removeItem(STORAGE_KEYS.PAYROLL_RUNS);
   localStorage.removeItem(STORAGE_KEYS.PAYSLIPS);
+  localStorage.removeItem(STORAGE_KEYS.GRADES);
+  localStorage.removeItem(STORAGE_KEYS.ALLOWANCES);
+  localStorage.removeItem(STORAGE_KEYS.DEDUCTIONS);
   
   console.log("🔄 Mock data cleared. Refresh the page to reinitialize.");
 };
@@ -473,6 +587,78 @@ export const mockDataStore = {
   },
   getPayslipsByEmployeeId: (employeeId: string): Payslip[] => {
     return mockDataStore.getPayslips().filter((p) => p.employeeId === employeeId);
+  },
+
+  // Grades
+  getGrades: (): Grade[] => getStorage(STORAGE_KEYS.GRADES, []),
+  setGrades: (grades: Grade[]): void => setStorage(STORAGE_KEYS.GRADES, grades),
+  addGrade: (grade: Grade): void => {
+    const grades = mockDataStore.getGrades();
+    grades.push(grade);
+    mockDataStore.setGrades(grades);
+  },
+  updateGrade: (id: string, updates: Partial<Omit<Grade, "id" | "createdAt">>): Grade | null => {
+    const grades = mockDataStore.getGrades();
+    const index = grades.findIndex((g) => g.id === id);
+    if (index === -1) return null;
+    grades[index] = { ...grades[index], ...updates, updatedAt: new Date().toISOString() };
+    mockDataStore.setGrades(grades);
+    return grades[index];
+  },
+  deleteGrade: (id: string): boolean => {
+    const grades = mockDataStore.getGrades();
+    const filtered = grades.filter((g) => g.id !== id);
+    if (filtered.length === grades.length) return false;
+    mockDataStore.setGrades(filtered);
+    return true;
+  },
+
+  // Allowances
+  getAllowances: (): AllowanceType[] => getStorage(STORAGE_KEYS.ALLOWANCES, []),
+  setAllowances: (allowances: AllowanceType[]): void => setStorage(STORAGE_KEYS.ALLOWANCES, allowances),
+  addAllowance: (allowance: AllowanceType): void => {
+    const allowances = mockDataStore.getAllowances();
+    allowances.push(allowance);
+    mockDataStore.setAllowances(allowances);
+  },
+  updateAllowance: (id: string, updates: Partial<Omit<AllowanceType, "id" | "createdAt">>): AllowanceType | null => {
+    const allowances = mockDataStore.getAllowances();
+    const index = allowances.findIndex((a) => a.id === id);
+    if (index === -1) return null;
+    allowances[index] = { ...allowances[index], ...updates, updatedAt: new Date().toISOString() };
+    mockDataStore.setAllowances(allowances);
+    return allowances[index];
+  },
+  deleteAllowance: (id: string): boolean => {
+    const allowances = mockDataStore.getAllowances();
+    const filtered = allowances.filter((a) => a.id !== id);
+    if (filtered.length === allowances.length) return false;
+    mockDataStore.setAllowances(filtered);
+    return true;
+  },
+
+  // Deductions
+  getDeductions: (): DeductionType[] => getStorage(STORAGE_KEYS.DEDUCTIONS, []),
+  setDeductions: (deductions: DeductionType[]): void => setStorage(STORAGE_KEYS.DEDUCTIONS, deductions),
+  addDeduction: (deduction: DeductionType): void => {
+    const deductions = mockDataStore.getDeductions();
+    deductions.push(deduction);
+    mockDataStore.setDeductions(deductions);
+  },
+  updateDeduction: (id: string, updates: Partial<Omit<DeductionType, "id" | "createdAt">>): DeductionType | null => {
+    const deductions = mockDataStore.getDeductions();
+    const index = deductions.findIndex((d) => d.id === id);
+    if (index === -1) return null;
+    deductions[index] = { ...deductions[index], ...updates, updatedAt: new Date().toISOString() };
+    mockDataStore.setDeductions(deductions);
+    return deductions[index];
+  },
+  deleteDeduction: (id: string): boolean => {
+    const deductions = mockDataStore.getDeductions();
+    const filtered = deductions.filter((d) => d.id !== id);
+    if (filtered.length === deductions.length) return false;
+    mockDataStore.setDeductions(filtered);
+    return true;
   },
 };
 

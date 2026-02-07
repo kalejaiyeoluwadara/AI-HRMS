@@ -25,7 +25,7 @@ export default function Home() {
     } else {
       router.push("/login")
     }
-  }, [router])
+  }, [])
 
   return (
     <div className="flex items-center justify-center min-h-screen">

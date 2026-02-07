@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { employeeApi, payrollApi } from "@/lib/api"
-import { Users, DollarSign, FileText, AlertCircle } from "lucide-react"
+import { Users, DollarSign, FileText, AlertCircle, Clock, UserCheck, Settings } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
@@ -17,9 +17,17 @@ export default function AdminDashboard() {
     recentActivities: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [auditLogs, setAuditLogs] = useState<Array<{
+    id: string
+    action: string
+    user: string
+    timestamp: Date
+    type: "user" | "payroll" | "system"
+  }>>([])
 
   useEffect(() => {
     loadStats()
+    loadAuditLogs()
   }, [])
 
   const loadStats = async () => {
@@ -48,6 +56,42 @@ export default function AdminDashboard() {
     }
   }
 
+  const loadAuditLogs = async () => {
+    // Mock audit log data - in production, this would come from an API
+    const mockLogs = [
+      { id: "1", action: "Employee created", user: "admin@example.com", timestamp: new Date(Date.now() - 5 * 60000), type: "system" as const },
+      { id: "2", action: "Payroll submitted", user: "admin@example.com", timestamp: new Date(Date.now() - 15 * 60000), type: "payroll" as const },
+      { id: "3", action: "Employee updated", user: "admin@example.com", timestamp: new Date(Date.now() - 30 * 60000), type: "system" as const },
+      { id: "4", action: "Payslip generated", user: "admin@example.com", timestamp: new Date(Date.now() - 45 * 60000), type: "payroll" as const },
+      { id: "5", action: "User role updated", user: "admin@example.com", timestamp: new Date(Date.now() - 60 * 60000), type: "user" as const },
+    ]
+    setAuditLogs(mockLogs)
+  }
+
+  const formatTimestamp = (date: Date) => {
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    
+    if (diffMins < 1) return "Just now"
+    if (diffMins < 60) return `${diffMins}m ago`
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours}h ago`
+    const diffDays = Math.floor(diffHours / 24)
+    return `${diffDays}d ago`
+  }
+
+  const getActionIcon = (type: "user" | "payroll" | "system") => {
+    switch (type) {
+      case "user":
+        return UserCheck
+      case "payroll":
+        return DollarSign
+      default:
+        return Clock
+    }
+  }
+
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <div className="container mx-auto p-6 space-y-6">
@@ -57,58 +101,32 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalEmployees}</div>
-              <p className="text-xs text-muted-foreground">Active employees</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Payroll</CardTitle>
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingPayroll}</div>
-              <p className="text-xs text-muted-foreground">Awaiting approval</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Payroll Runs</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalPayroll}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recent Activities</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.recentActivities}</div>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
-            </CardContent>
-          </Card>
+          {[
+            { title: "Total Employees", value: stats.totalEmployees, description: "Active employees", Icon: Users },
+            { title: "Pending Payroll", value: stats.pendingPayroll, description: "Awaiting approval", Icon: AlertCircle },
+            { title: "Total Payroll Runs", value: stats.totalPayroll, description: "All time", Icon: DollarSign },
+            { title: "Recent Activities", value: stats.recentActivities, description: "Last 7 days", Icon: FileText },
+          ].map(({ title, value, description, Icon }) => (
+            <Card key={title} className="border-none shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-xs text-muted-foreground">{description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="flex flex-col gap-3">
               <Link href="/users">
                 <Button variant="outline" className="w-full justify-start">
                   <Users className="mr-2 h-4 w-4" />
@@ -133,28 +151,45 @@ export default function AdminDashboard() {
                   All Payslips
                 </Button>
               </Link>
+              <Link href="/dashboard/settings">
+                <Button variant="outline" className="w-full justify-start">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>Current system health</CardDescription>
+              <CardTitle>Audit Log</CardTitle>
+              <CardDescription>Recent system activities</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Database</span>
-                  <span className="text-sm font-medium text-green-600">Connected</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">API</span>
-                  <span className="text-sm font-medium text-green-600">Online</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">AI Service</span>
-                  <span className="text-sm font-medium text-green-600">Active</span>
-                </div>
+              <div className="space-y-3">
+                {auditLogs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No audit logs available</p>
+                ) : (
+                  auditLogs.map((log) => {
+                    const Icon = getActionIcon(log.type)
+                    return (
+                      <div key={log.id} className="flex items-start gap-3 pb-3 border-b last:border-0 last:pb-0">
+                        <div className="mt-0.5">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-medium truncate">{log.action}</p>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {formatTimestamp(log.timestamp)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">{log.user}</p>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </CardContent>
           </Card>

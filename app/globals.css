@@ -1,3 +1,5 @@
+/* Google Fonts must be first so the font is available before Tailwind */
+@import url('https://fonts.googleapis.com/css2?family=Kufam:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
 @source "../components/**/*.{js,ts,jsx,tsx}";
@@ -50,6 +52,7 @@
 }
 
 @theme {
+  --font-sans: "Kufam", ui-sans-serif, system-ui, sans-serif;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -77,9 +80,9 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: "Kufam", ui-sans-serif, system-ui, sans-serif;
 }
 
-button{
+button {
   @apply cursor-pointer;
 }

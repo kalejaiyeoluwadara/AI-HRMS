@@ -67,7 +67,7 @@ export default function EmployeeDashboard() {
       <div className="container mx-auto p-6 space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Welcome, {user?.name}</h1>
-          <p className="text-muted-foreground">Your employee dashboard</p>
+          <p className="text-muted-foreground">Here’s your dashboard overview.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">

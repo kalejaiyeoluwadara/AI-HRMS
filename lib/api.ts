@@ -1,4 +1,4 @@
-import type { ApiResponse, User, UserRole, Employee, PayrollRun, PayrollDetail, Payslip } from "@/types";
+import type { ApiResponse, User, UserRole, Employee, PayrollRun, PayrollDetail, Payslip, Grade, AllowanceType, DeductionType } from "@/types";
 import { mockDataStore, delay, generateId } from "./mockData";
 import { getStoredUser } from "./auth";
 
@@ -549,6 +549,216 @@ export const userApi = {
     return {
       success: true,
       message: "User deleted successfully",
+    };
+  },
+};
+
+// Grade API
+export const gradeApi = {
+  getAll: async (): Promise<ApiResponse<Grade[]>> => {
+    await delay();
+    const grades = mockDataStore.getGrades();
+    return {
+      success: true,
+      data: grades,
+    };
+  },
+
+  create: async (data: Omit<Grade, "id" | "createdAt" | "updatedAt">): Promise<ApiResponse<Grade>> => {
+    await delay();
+
+    const newGrade: Grade = {
+      ...data,
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    mockDataStore.addGrade(newGrade);
+
+    return {
+      success: true,
+      data: newGrade,
+      message: "Grade created successfully",
+    };
+  },
+
+  update: async (id: string, data: Partial<Omit<Grade, "id" | "createdAt">>): Promise<ApiResponse<Grade>> => {
+    await delay();
+
+    const updated = mockDataStore.updateGrade(id, data);
+
+    if (!updated) {
+      return {
+        success: false,
+        message: "Grade not found",
+        error: "Not found",
+      };
+    }
+
+    return {
+      success: true,
+      data: updated,
+      message: "Grade updated successfully",
+    };
+  },
+
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    await delay();
+
+    const deleted = mockDataStore.deleteGrade(id);
+
+    if (!deleted) {
+      return {
+        success: false,
+        message: "Grade not found",
+        error: "Not found",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Grade deleted successfully",
+    };
+  },
+};
+
+// Allowance API
+export const allowanceApi = {
+  getAll: async (): Promise<ApiResponse<AllowanceType[]>> => {
+    await delay();
+    const allowances = mockDataStore.getAllowances();
+    return {
+      success: true,
+      data: allowances,
+    };
+  },
+
+  create: async (data: Omit<AllowanceType, "id" | "createdAt" | "updatedAt">): Promise<ApiResponse<AllowanceType>> => {
+    await delay();
+
+    const newAllowance: AllowanceType = {
+      ...data,
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    mockDataStore.addAllowance(newAllowance);
+
+    return {
+      success: true,
+      data: newAllowance,
+      message: "Allowance created successfully",
+    };
+  },
+
+  update: async (id: string, data: Partial<Omit<AllowanceType, "id" | "createdAt">>): Promise<ApiResponse<AllowanceType>> => {
+    await delay();
+
+    const updated = mockDataStore.updateAllowance(id, data);
+
+    if (!updated) {
+      return {
+        success: false,
+        message: "Allowance not found",
+        error: "Not found",
+      };
+    }
+
+    return {
+      success: true,
+      data: updated,
+      message: "Allowance updated successfully",
+    };
+  },
+
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    await delay();
+
+    const deleted = mockDataStore.deleteAllowance(id);
+
+    if (!deleted) {
+      return {
+        success: false,
+        message: "Allowance not found",
+        error: "Not found",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Allowance deleted successfully",
+    };
+  },
+};
+
+// Deduction API
+export const deductionApi = {
+  getAll: async (): Promise<ApiResponse<DeductionType[]>> => {
+    await delay();
+    const deductions = mockDataStore.getDeductions();
+    return {
+      success: true,
+      data: deductions,
+    };
+  },
+
+  create: async (data: Omit<DeductionType, "id" | "createdAt" | "updatedAt">): Promise<ApiResponse<DeductionType>> => {
+    await delay();
+
+    const newDeduction: DeductionType = {
+      ...data,
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    mockDataStore.addDeduction(newDeduction);
+
+    return {
+      success: true,
+      data: newDeduction,
+      message: "Deduction created successfully",
+    };
+  },
+
+  update: async (id: string, data: Partial<Omit<DeductionType, "id" | "createdAt">>): Promise<ApiResponse<DeductionType>> => {
+    await delay();
+
+    const updated = mockDataStore.updateDeduction(id, data);
+
+    if (!updated) {
+      return {
+        success: false,
+        message: "Deduction not found",
+        error: "Not found",
+      };
+    }
+
+    return {
+      success: true,
+      data: updated,
+      message: "Deduction updated successfully",
+    };
+  },
+
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    await delay();
+
+    const deleted = mockDataStore.deleteDeduction(id);
+
+    if (!deleted) {
+      return {
+        success: false,
+        message: "Deduction not found",
+        error: "Not found",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Deduction deleted successfully",
     };
   },
 };

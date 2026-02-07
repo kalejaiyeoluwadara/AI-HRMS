@@ -62,6 +62,38 @@ export interface Payslip {
   generatedAt: string;
 }
 
+export interface Grade {
+  id: string;
+  name: string;
+  description?: string;
+  minSalary: number;
+  maxSalary: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AllowanceType {
+  id: string;
+  name: string;
+  description?: string;
+  type: "fixed" | "percentage";
+  amount: number; // If fixed, actual amount. If percentage, the percentage value
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DeductionType {
+  id: string;
+  name: string;
+  description?: string;
+  type: "fixed" | "percentage";
+  amount: number; // If fixed, actual amount. If percentage, the percentage value
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;

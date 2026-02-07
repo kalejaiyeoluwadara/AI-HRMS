@@ -11,6 +11,8 @@ import {
   UserCheck,
   DollarSign,
   FileText,
+  Bot,
+  Settings,
 } from "lucide-react"
 
 const roleRoutes: Record<UserRole, { label: string; path: string; icon: React.ComponentType<{ className?: string }> }[]> = {
@@ -20,13 +22,15 @@ const roleRoutes: Record<UserRole, { label: string; path: string; icon: React.Co
     { label: "Employees", path: "/employees", icon: UserCheck },
     { label: "Payroll", path: "/payroll", icon: DollarSign },
     { label: "Payslips", path: "/payslips", icon: FileText },
+    { label: "Settings", path: "/dashboard/settings", icon: Settings },
   ],
   admin: [
     { label: "Dashboard", path: "/dashboard/admin", icon: LayoutDashboard },
-    { label: "Users", path: "/dashboard/users", icon: Users },
     { label: "Employees", path: "/employees", icon: UserCheck },
     { label: "Payroll", path: "/payroll", icon: DollarSign },
     { label: "Payslips", path: "/payslips", icon: FileText },
+    { label: "AI Assistant", path: "/ai", icon: Bot },
+    { label: "Settings", path: "/dashboard/settings", icon: Settings },
   ],
   payroll_officer: [
     { label: "Dashboard", path: "/dashboard/payroll", icon: LayoutDashboard },
