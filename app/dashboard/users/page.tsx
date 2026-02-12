@@ -28,7 +28,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
@@ -239,13 +239,17 @@ export default function UsersPage() {
                 <div className="space-y-2">
                   <Label htmlFor="role">Role *</Label>
                   <Select
-                    id="role"
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                    onValueChange={(value: string) => setFormData({ ...formData, role: value as UserRole })}
                   >
-                    <option value="employee">Employee</option>
-                    <option value="payroll_officer">Payroll Officer</option>
-                    {canCreateAdmin && <option value="admin">Admin</option>}
+                    <SelectTrigger id="role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="employee">Employee</SelectItem>
+                      <SelectItem value="payroll_officer">Payroll Officer</SelectItem>
+                      {canCreateAdmin && <SelectItem value="admin">Admin</SelectItem>}
+                    </SelectContent>
                   </Select>
                 </div>
               </div>

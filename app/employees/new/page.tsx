@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { employeeApi } from "@/lib/api"
@@ -142,15 +142,19 @@ export default function NewEmployeePage() {
               <div className="space-y-2">
                 <Label htmlFor="employmentStatus">Employment Status *</Label>
                 <Select
-                  id="employmentStatus"
                   value={formData.employmentStatus}
-                  onChange={(e) =>
-                    setFormData({ ...formData, employmentStatus: e.target.value })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, employmentStatus: value })
                   }
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="terminated">Terminated</option>
+                  <SelectTrigger id="employmentStatus">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="terminated">Terminated</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
 

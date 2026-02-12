@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payrollApi } from "@/lib/api"
@@ -83,15 +83,19 @@ export default function RunPayrollPage() {
                 <div className="space-y-2">
                   <Label htmlFor="month">Month *</Label>
                   <Select
-                    id="month"
                     value={formData.month}
-                    onChange={(e) => setFormData({ ...formData, month: e.target.value })}
+                    onValueChange={(value) => setFormData({ ...formData, month: value })}
                   >
-                    {months.map((month, index) => (
-                      <option key={index} value={(index + 1).toString().padStart(2, "0")}>
-                        {month}
-                      </option>
-                    ))}
+                    <SelectTrigger id="month">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((month, index) => (
+                        <SelectItem key={index} value={(index + 1).toString().padStart(2, "0")}>
+                          {month}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
