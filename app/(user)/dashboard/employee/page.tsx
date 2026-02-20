@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payslipApi } from "@/lib/api"
@@ -106,31 +114,35 @@ export default function EmployeeDashboard() {
             ) : payslips.length === 0 ? (
               <p className="text-sm text-muted-foreground">No payslips available</p>
             ) : (
-              <div className="space-y-4">
-                {payslips.map((payslip) => (
-                  <div
-                    key={payslip.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Period</TableHead>
+                    <TableHead>Net Pay</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payslips.map((payslip) => (
+                    <TableRow key={payslip.id}>
+                      <TableCell className="font-medium">
                         {new Date(payslip.year, parseInt(payslip.month) - 1).toLocaleString(
                           "default",
                           { month: "long", year: "numeric" }
                         )}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Net Pay: {formatCurrency(payslip.netPay)}
-                      </p>
-                    </div>
-                    <Link href={`/payslips/${payslip.id}`}>
-                      <Button variant="outline" size="sm">
-                        View
-                      </Button>
-                    </Link>
-                  </div>
-                ))}
-              </div>
+                      </TableCell>
+                      <TableCell>{formatCurrency(payslip.netPay)}</TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/payslips/${payslip.id}`}>
+                          <Button variant="outline" size="sm">
+                            View
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>

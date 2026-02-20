@@ -60,58 +60,32 @@ export default function PayrollOfficerDashboard() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingApprovals}</div>
-              <p className="text-xs text-muted-foreground">Awaiting review</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Runs</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalRuns}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <FileCheck className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.thisMonth}</div>
-              <p className="text-xs text-muted-foreground">Current month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Anomalies Detected</CardTitle>
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.anomalies}</div>
-              <p className="text-xs text-muted-foreground">Requires attention</p>
-            </CardContent>
-          </Card>
+          {[
+            { title: "Pending Approvals", description: "Awaiting review", value: stats.pendingApprovals, icon: Clock },
+            { title: "Total Runs", description: "All time", value: stats.totalRuns, icon: DollarSign },
+            { title: "This Month", description: "Current month", value: stats.thisMonth, icon: FileCheck },
+            { title: "Anomalies Detected", description: "Requires attention", value: stats.anomalies, icon: AlertCircle },
+          ].map(({ title, description, value, icon: Icon }) => (
+            <Card key={title} className="border-0">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-xs text-muted-foreground">{description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+          <Card className="border-0">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common payroll tasks</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="flex flex-col gap-2">
               <Link href="/payroll/run">
                 <Button className="w-full justify-start">
                   <DollarSign className="mr-2 h-4 w-4" />
@@ -133,7 +107,7 @@ export default function PayrollOfficerDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0">
             <CardHeader>
               <CardTitle>Recent Payroll Runs</CardTitle>
               <CardDescription>Latest payroll activities</CardDescription>

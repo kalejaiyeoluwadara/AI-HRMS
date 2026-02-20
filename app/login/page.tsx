@@ -65,7 +65,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-background">
-      <Card className="w-full border-none shadow-2xl px-8 py-12  max-w-xl">
+      <Card className="w-full border-none shadow-lg px-8 py-12  max-w-xl">
         <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
