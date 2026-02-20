@@ -72,7 +72,7 @@ export default function RunPayrollPage() {
           </Link>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardHeader>
             <CardTitle>Run Payroll</CardTitle>
             <CardDescription>Generate payroll for a specific month</CardDescription>
