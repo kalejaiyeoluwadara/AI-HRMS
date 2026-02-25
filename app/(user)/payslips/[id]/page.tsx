@@ -9,7 +9,7 @@ import { payslipApi } from "@/lib/api"
 import { toast } from "sonner"
 import { ArrowLeft, Download } from "lucide-react"
 import Link from "next/link"
-import { useAuthUser } from "@/components/hooks/use-auth-user"
+import { useAuthUser, useBackendToken } from "@/components/hooks/use-auth-user"
 import type { Payslip } from "@/types"
 
 export default function PayslipDetailPage() {
@@ -17,6 +17,7 @@ export default function PayslipDetailPage() {
   const params = useParams()
   const id = params.id as string
   const user = useAuthUser()
+  const token = useBackendToken()
   const [payslip, setPayslip] = useState<Payslip | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -26,7 +27,7 @@ export default function PayslipDetailPage() {
 
   const loadPayslip = async () => {
     try {
-      const response = await payslipApi.getById(id)
+      const response = await payslipApi.getById(id, token)
       if (response.success && response.data) {
         setPayslip(response.data)
       }
@@ -45,7 +46,7 @@ export default function PayslipDetailPage() {
   const handleDownload = async () => {
     if (!payslip) return
     try {
-      const blob = await payslipApi.download(payslip.id)
+      const blob = await payslipApi.download(payslip.id, token)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url

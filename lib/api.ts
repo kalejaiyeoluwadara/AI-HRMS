@@ -1,5 +1,6 @@
 import type { ApiResponse, User, UserRole, Employee, PayrollRun, PayrollDetail, Payslip, Grade, AllowanceType, DeductionType } from "@/types";
 import { mockDataStore, delay, generateId } from "./mockData";
+import { getApiUrl, getApiHeaders } from "./api-client";
 
 // Mock API - simulates backend API calls using localStorage
 // Auth is handled by NextAuth; pass user from useAuthUser() where needed
@@ -41,139 +42,230 @@ export const authApi = {
 
 // Employee API
 export const employeeApi = {
-  getAll: async (): Promise<ApiResponse<Employee[]>> => {
+  getAll: async (token?: string | null): Promise<ApiResponse<Employee[]>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/employees"), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to fetch employees",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data ?? [],
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch employees",
+          error: "NetworkError",
+        };
+      }
+    }
+
     await delay();
     const employees = mockDataStore.getEmployees();
-    return {
-      success: true,
-      data: employees,
-    };
+    return { success: true, data: employees };
   },
 
-  getById: async (id: string): Promise<ApiResponse<Employee>> => {
+  getById: async (id: string, token?: string | null): Promise<ApiResponse<Employee>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/employees/${id}`), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Employee not found",
+            error: json.error || "NotFound",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch employee",
+          error: "NetworkError",
+        };
+      }
+    }
+
     await delay();
     const employee = mockDataStore.getEmployeeById(id);
-    
-    if (!employee) {
-      return {
-        success: false,
-        message: "Employee not found",
-        error: "Not found",
-      };
-    }
-
-    return {
-      success: true,
-      data: employee,
-    };
+    if (!employee) return { success: false, message: "Employee not found", error: "Not found" };
+    return { success: true, data: employee };
   },
 
-  create: async (data: Omit<Employee, "id" | "createdAt" | "updatedAt">): Promise<ApiResponse<Employee>> => {
-    await delay();
-
-    // Check if employee with email already exists
-    const existingEmployee = mockDataStore.getEmployees().find((e) => e.email === data.email);
-    if (existingEmployee) {
-      return {
-        success: false,
-        message: "Employee with this email already exists",
-        error: "Duplicate email",
-      };
+  create: async (data: Omit<Employee, "id" | "createdAt" | "updatedAt">, token?: string | null): Promise<ApiResponse<Employee>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/employees"), {
+          method: "POST",
+          headers: getApiHeaders(token),
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to create employee",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to create employee",
+          error: "NetworkError",
+        };
+      }
     }
 
+    await delay();
+    const existingEmployee = mockDataStore.getEmployees().find((e) => e.email === data.email);
+    if (existingEmployee) {
+      return { success: false, message: "Employee with this email already exists", error: "Duplicate email" };
+    }
     const newEmployee: Employee = {
       ...data,
       id: generateId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
     mockDataStore.addEmployee(newEmployee);
-
-    return {
-      success: true,
-      data: newEmployee,
-      message: "Employee created successfully",
-    };
+    return { success: true, data: newEmployee, message: "Employee created successfully" };
   },
 
-  update: async (id: string, data: Partial<Employee>): Promise<ApiResponse<Employee>> => {
-    await delay();
+  update: async (id: string, data: Partial<Employee>, token?: string | null): Promise<ApiResponse<Employee>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/employees/${id}`), {
+          method: "PUT",
+          headers: getApiHeaders(token),
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to update employee",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to update employee",
+          error: "NetworkError",
+        };
+      }
+    }
 
+    await delay();
     const updated = mockDataStore.updateEmployee(id, data);
-    
-    if (!updated) {
-      return {
-        success: false,
-        message: "Employee not found",
-        error: "Not found",
-      };
-    }
-
-    return {
-      success: true,
-      data: updated,
-      message: "Employee updated successfully",
-    };
+    if (!updated) return { success: false, message: "Employee not found", error: "Not found" };
+    return { success: true, data: updated, message: "Employee updated successfully" };
   },
 
-  delete: async (id: string): Promise<ApiResponse<void>> => {
-    await delay();
-
-    const deleted = mockDataStore.deleteEmployee(id);
-    
-    if (!deleted) {
-      return {
-        success: false,
-        message: "Employee not found",
-        error: "Not found",
-      };
+  delete: async (id: string, token?: string | null): Promise<ApiResponse<void>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/employees/${id}`), {
+          method: "DELETE",
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to delete employee",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return { success: true, message: json.message };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to delete employee",
+          error: "NetworkError",
+        };
+      }
     }
 
-    return {
-      success: true,
-      message: "Employee deleted successfully",
-    };
+    await delay();
+    const deleted = mockDataStore.deleteEmployee(id);
+    if (!deleted) return { success: false, message: "Employee not found", error: "Not found" };
+    return { success: true, message: "Employee deleted successfully" };
   },
 };
 
 // Payroll API
 export const payrollApi = {
-  run: async (month: string, year: number): Promise<ApiResponse<PayrollRun>> => {
-    await delay(500); // Simulate longer processing time
+  run: async (month: string, year: number, token?: string | null): Promise<ApiResponse<PayrollRun>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/payroll/run"), {
+          method: "POST",
+          headers: getApiHeaders(token),
+          body: JSON.stringify({ month, year }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to run payroll",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to run payroll",
+          error: "NetworkError",
+        };
+      }
+    }
 
+    await delay(500);
     const employees = mockDataStore.getEmployees().filter((e) => e.employmentStatus === "active");
-    
-    // Calculate total amount
-    const totalAmount = employees.reduce((sum, emp) => {
-      return sum + emp.salary + emp.allowances - emp.deductions;
-    }, 0);
-
-    // Detect anomalies (mock logic)
+    const totalAmount = employees.reduce((sum, emp) => sum + emp.salary + emp.allowances - emp.deductions, 0);
     const anomalies: PayrollRun["anomalies"] = [];
     employees.forEach((emp) => {
-      // Mock anomaly detection
       if (emp.deductions > emp.salary * 0.3) {
-        anomalies.push({
-          employeeId: emp.id,
-          employeeName: emp.name,
-          type: "unusual_deduction",
-          message: "Deduction amount exceeds 30% of salary",
-          severity: "high",
-        });
+        anomalies.push({ employeeId: emp.id, employeeName: emp.name, type: "unusual_deduction", message: "Deduction amount exceeds 30% of salary", severity: "high" });
       }
       if (emp.allowances > emp.salary * 0.2 && emp.jobRole.toLowerCase().includes("engineer")) {
-        // This is fine, but we'll add a low severity note
-        anomalies.push({
-          employeeId: emp.id,
-          employeeName: emp.name,
-          type: "other",
-          message: "High allowance for engineering role",
-          severity: "low",
-        });
+        anomalies.push({ employeeId: emp.id, employeeName: emp.name, type: "other", message: "High allowance for engineering role", severity: "low" });
       }
     });
-
     const newPayrollRun: PayrollRun = {
       id: generateId(),
       month,
@@ -184,10 +276,7 @@ export const payrollApi = {
       anomalies: anomalies.length > 0 ? anomalies : undefined,
       createdAt: new Date().toISOString(),
     };
-
     mockDataStore.addPayrollRun(newPayrollRun);
-
-    // Generate payslips for all employees
     const payslips: Payslip[] = employees.map((emp) => ({
       id: `payslip-${emp.id}-${year}-${month}`,
       employeeId: emp.id,
@@ -200,52 +289,81 @@ export const payrollApi = {
       netPay: emp.salary + emp.allowances - emp.deductions,
       generatedAt: new Date().toISOString(),
     }));
-
-    // Add payslips (avoid duplicates)
     const existingPayslips = mockDataStore.getPayslips();
     const newPayslipIds = new Set(existingPayslips.map((p) => p.id));
-    payslips.forEach((payslip) => {
-      if (!newPayslipIds.has(payslip.id)) {
-        mockDataStore.addPayslip(payslip);
+    payslips.forEach((p) => { if (!newPayslipIds.has(p.id)) mockDataStore.addPayslip(p); });
+    return { success: true, data: newPayrollRun, message: "Payroll run created successfully" };
+  },
+
+  getAll: async (token?: string | null): Promise<ApiResponse<PayrollRun[]>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/payroll"), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to fetch payroll runs",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data ?? [],
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch payroll runs",
+          error: "NetworkError",
+        };
       }
-    });
-
-    return {
-      success: true,
-      data: newPayrollRun,
-      message: "Payroll run created successfully",
-    };
-  },
-
-  getAll: async (): Promise<ApiResponse<PayrollRun[]>> => {
-    await delay();
-    const runs = mockDataStore.getPayrollRuns();
-    return {
-      success: true,
-      data: runs,
-    };
-  },
-
-  getById: async (id: string): Promise<ApiResponse<PayrollRun & { details: PayrollDetail[] }>> => {
-    await delay();
-    const run = mockDataStore.getPayrollRunById(id);
-    
-    if (!run) {
-      return {
-        success: false,
-        message: "Payroll run not found",
-        error: "Not found",
-      };
     }
 
-    // Get payroll details from employees
+    await delay();
+    const runs = mockDataStore.getPayrollRuns();
+    return { success: true, data: runs };
+  },
+
+  getById: async (id: string, token?: string | null): Promise<ApiResponse<PayrollRun & { details: PayrollDetail[] }>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/payroll/${id}`), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Payroll run not found",
+            error: json.error || "NotFound",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch payroll run",
+          error: "NetworkError",
+        };
+      }
+    }
+
+    await delay();
+    const run = mockDataStore.getPayrollRunById(id);
+    if (!run) return { success: false, message: "Payroll run not found", error: "Not found" };
     const employees = mockDataStore.getEmployees();
     const details: PayrollDetail[] = employees
       .filter((e) => e.employmentStatus === "active")
       .map((emp) => {
-        // Find anomalies for this employee
         const employeeAnomalies = run.anomalies?.filter((a) => a.employeeId === emp.id);
-
         return {
           employeeId: emp.id,
           employeeName: emp.name,
@@ -253,62 +371,87 @@ export const payrollApi = {
           allowances: emp.allowances,
           deductions: emp.deductions,
           netPay: emp.salary + emp.allowances - emp.deductions,
-          anomalies: employeeAnomalies && employeeAnomalies.length > 0 ? employeeAnomalies : undefined,
+          anomalies: employeeAnomalies?.length ? employeeAnomalies : undefined,
         };
       });
-
-    return {
-      success: true,
-      data: { ...run, details },
-    };
+    return { success: true, data: { ...run, details } };
   },
 
-  approve: async (id: string): Promise<ApiResponse<PayrollRun>> => {
-    await delay();
+  approve: async (id: string, token?: string | null): Promise<ApiResponse<PayrollRun>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/payroll/${id}/approve`), {
+          method: "POST",
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to approve payroll",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to approve payroll",
+          error: "NetworkError",
+        };
+      }
+    }
 
+    await delay();
     const updated = mockDataStore.updatePayrollRun(id, { status: "approved" });
-    
-    if (!updated) {
-      return {
-        success: false,
-        message: "Payroll run not found",
-        error: "Not found",
-      };
-    }
-
-    return {
-      success: true,
-      data: updated,
-      message: "Payroll run approved successfully",
-    };
+    if (!updated) return { success: false, message: "Payroll run not found", error: "Not found" };
+    return { success: true, data: updated, message: "Payroll run approved successfully" };
   },
 
-  reject: async (id: string, reason?: string): Promise<ApiResponse<PayrollRun>> => {
-    await delay();
-
-    const updated = mockDataStore.updatePayrollRun(id, { status: "rejected" });
-    
-    if (!updated) {
-      return {
-        success: false,
-        message: "Payroll run not found",
-        error: "Not found",
-      };
+  reject: async (id: string, reason?: string, token?: string | null): Promise<ApiResponse<PayrollRun>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/payroll/${id}/reject`), {
+          method: "POST",
+          headers: getApiHeaders(token),
+          body: JSON.stringify({ reason }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to reject payroll",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to reject payroll",
+          error: "NetworkError",
+        };
+      }
     }
 
-    return {
-      success: true,
-      data: updated,
-      message: reason || "Payroll run rejected",
-    };
+    await delay();
+    const updated = mockDataStore.updatePayrollRun(id, { status: "rejected" });
+    if (!updated) return { success: false, message: "Payroll run not found", error: "Not found" };
+    return { success: true, data: updated, message: reason || "Payroll run rejected" };
   },
 };
 
 // Payslip API
 export const payslipApi = {
-  getMyPayslips: async (user: User | null): Promise<ApiResponse<Payslip[]>> => {
-    await delay();
-
+  getMyPayslips: async (user: User | null, token?: string | null): Promise<ApiResponse<Payslip[]>> => {
     if (!user) {
       return {
         success: false,
@@ -317,6 +460,36 @@ export const payslipApi = {
       };
     }
 
+    // Use real backend when token is provided
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/payslips/my"), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to fetch payslips",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data ?? [],
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch payslips",
+          error: "NetworkError",
+        };
+      }
+    }
+
+    // Fallback to mock data
+    await delay();
     const employee = mockDataStore.getEmployees().find((e) => e.email === user.email);
     if (!employee) {
       return {
@@ -325,27 +498,73 @@ export const payslipApi = {
         message: "No employee record found",
       };
     }
-
     const payslips = mockDataStore.getPayslipsByEmployeeId(employee.id);
-    return {
-      success: true,
-      data: payslips,
-    };
+    return { success: true, data: payslips };
   },
 
-  getAll: async (): Promise<ApiResponse<Payslip[]>> => {
+  getAll: async (token?: string | null): Promise<ApiResponse<Payslip[]>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/payslips"), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to fetch payslips",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data ?? [],
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch payslips",
+          error: "NetworkError",
+        };
+      }
+    }
+
     await delay();
     const payslips = mockDataStore.getPayslips();
-    return {
-      success: true,
-      data: payslips,
-    };
+    return { success: true, data: payslips };
   },
 
-  getById: async (id: string): Promise<ApiResponse<Payslip>> => {
+  getById: async (id: string, token?: string | null): Promise<ApiResponse<Payslip>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/payslips/${id}`), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Payslip not found",
+            error: json.error || "NotFound",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to fetch payslip",
+          error: "NetworkError",
+        };
+      }
+    }
+
     await delay();
     const payslip = mockDataStore.getPayslipById(id);
-    
     if (!payslip) {
       return {
         success: false,
@@ -353,23 +572,26 @@ export const payslipApi = {
         error: "Not found",
       };
     }
-
-    return {
-      success: true,
-      data: payslip,
-    };
+    return { success: true, data: payslip };
   },
 
-  download: async (id: string): Promise<Blob> => {
-    await delay(800); // Simulate download time
+  download: async (id: string, token?: string | null): Promise<Blob> => {
+    if (token) {
+      const res = await fetch(getApiUrl(`/api/payslips/${id}/download`), {
+        headers: getApiHeaders(token),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.message || "Failed to download payslip");
+      }
+      return res.blob();
+    }
 
+    await delay(800);
     const payslip = mockDataStore.getPayslipById(id);
-    
     if (!payslip) {
       throw new Error("Payslip not found");
     }
-
-    // Generate a mock PDF content (just a simple text representation)
     const content = `
 PAYSLIP
 Employee: ${payslip.employeeName}
@@ -382,117 +604,126 @@ Net Pay: $${payslip.netPay.toFixed(2)}
 
 Generated: ${new Date(payslip.generatedAt).toLocaleString()}
     `.trim();
-
-    // Create a blob with text content (in real app, this would be a PDF)
     return new Blob([content], { type: "application/pdf" });
   },
 };
 
 // User Management API (for admins/superadmins)
 export const userApi = {
-  getAll: async (): Promise<ApiResponse<User[]>> => {
-    await delay();
-    const users = mockDataStore.getUsers();
-    return {
-      success: true,
-      data: users,
-    };
-  },
-
-  create: async (data: { name: string; email: string; role: UserRole }, currentUser: User | null): Promise<ApiResponse<User>> => {
-    await delay();
-
-    if (!currentUser) {
-      return {
-        success: false,
-        message: "Not authenticated",
-        error: "Unauthorized",
-      };
-    }
-
-    // Only superadmin can create admins, superadmin and admins can create other roles
-    if (data.role === "admin" || data.role === "superadmin") {
-      if (currentUser.role !== "superadmin") {
+  getAll: async (token?: string | null): Promise<ApiResponse<User[]>> => {
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/users"), {
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to fetch users",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data ?? [],
+          message: json.message,
+        };
+      } catch (err) {
         return {
           success: false,
-          message: "Only superadmin can create admin accounts",
-          error: "Forbidden",
+          message: "Failed to fetch users",
+          error: "NetworkError",
         };
       }
     }
-
-    // Check if user already exists
-    const existingUser = mockDataStore.findUserByEmail(data.email);
-    if (existingUser) {
-      return {
-        success: false,
-        message: "User with this email already exists",
-        error: "Duplicate email",
-      };
-    }
-
-    const newUser: User = {
-      id: generateId(),
-      email: data.email,
-      name: data.name,
-      role: data.role,
-    };
-
-    mockDataStore.addUser(newUser);
-
-    return {
-      success: true,
-      data: newUser,
-      message: "User created successfully",
-    };
+    await delay();
+    const users = mockDataStore.getUsers();
+    return { success: true, data: users };
   },
 
-  delete: async (id: string, currentUser: User | null): Promise<ApiResponse<void>> => {
-    await delay();
-
+  create: async (data: { name: string; email: string; role: UserRole }, currentUser: User | null, token?: string | null): Promise<ApiResponse<User>> => {
     if (!currentUser) {
-      return {
-        success: false,
-        message: "Not authenticated",
-        error: "Unauthorized",
-      };
+      return { success: false, message: "Not authenticated", error: "Unauthorized" };
     }
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl("/api/users"), {
+          method: "POST",
+          headers: getApiHeaders(token),
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to create user",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return {
+          success: json.success ?? true,
+          data: json.data,
+          message: json.message,
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to create user",
+          error: "NetworkError",
+        };
+      }
+    }
+    await delay();
+    if ((data.role === "admin" || data.role === "superadmin") && currentUser.role !== "superadmin") {
+      return { success: false, message: "Only superadmin can create admin accounts", error: "Forbidden" };
+    }
+    const existingUser = mockDataStore.findUserByEmail(data.email);
+    if (existingUser) {
+      return { success: false, message: "User with this email already exists", error: "Duplicate email" };
+    }
+    const newUser: User = { id: generateId(), email: data.email, name: data.name, role: data.role };
+    mockDataStore.addUser(newUser);
+    return { success: true, data: newUser, message: "User created successfully" };
+  },
 
+  delete: async (id: string, currentUser: User | null, token?: string | null): Promise<ApiResponse<void>> => {
+    if (!currentUser) {
+      return { success: false, message: "Not authenticated", error: "Unauthorized" };
+    }
+    if (token) {
+      try {
+        const res = await fetch(getApiUrl(`/api/users/${id}`), {
+          method: "DELETE",
+          headers: getApiHeaders(token),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return {
+            success: false,
+            message: json.message || "Failed to delete user",
+            error: json.error || "RequestFailed",
+          };
+        }
+        return { success: true, message: json.message };
+      } catch (err) {
+        return {
+          success: false,
+          message: "Failed to delete user",
+          error: "NetworkError",
+        };
+      }
+    }
+    await delay();
     const userToDelete = mockDataStore.findUserById(id);
-    if (!userToDelete) {
-      return {
-        success: false,
-        message: "User not found",
-        error: "Not found",
-      };
-    }
-
-    // Prevent deleting yourself
-    if (userToDelete.id === currentUser.id) {
-      return {
-        success: false,
-        message: "Cannot delete your own account",
-        error: "Forbidden",
-      };
-    }
-
-    // Only superadmin can delete admins/superadmins
+    if (!userToDelete) return { success: false, message: "User not found", error: "Not found" };
+    if (userToDelete.id === currentUser.id) return { success: false, message: "Cannot delete your own account", error: "Forbidden" };
     if ((userToDelete.role === "admin" || userToDelete.role === "superadmin") && currentUser.role !== "superadmin") {
-      return {
-        success: false,
-        message: "Only superadmin can delete admin accounts",
-        error: "Forbidden",
-      };
+      return { success: false, message: "Only superadmin can delete admin accounts", error: "Forbidden" };
     }
-
     const users = mockDataStore.getUsers();
-    const filtered = users.filter((u) => u.id !== id);
-    mockDataStore.setUsers(filtered);
-
-    return {
-      success: true,
-      message: "User deleted successfully",
-    };
+    mockDataStore.setUsers(users.filter((u) => u.id !== id));
+    return { success: true, message: "User deleted successfully" };
   },
 };
 

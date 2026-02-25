@@ -15,12 +15,13 @@ import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payslipApi } from "@/lib/api"
 import { FileText, DollarSign, Calendar } from "lucide-react"
 import Link from "next/link"
-import { useAuthUser } from "@/components/hooks/use-auth-user"
+import { useAuthUser, useBackendToken } from "@/components/hooks/use-auth-user"
 import { toast } from "sonner"
 import type { Payslip } from "@/types"
 
 export default function EmployeeDashboard() {
   const user = useAuthUser()
+  const token = useBackendToken()
   const [payslips, setPayslips] = useState<Payslip[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -30,7 +31,7 @@ export default function EmployeeDashboard() {
 
   const loadPayslips = async () => {
     try {
-      const response = await payslipApi.getMyPayslips(user)
+      const response = await payslipApi.getMyPayslips(user, token)
 
       if (response.success && response.data) {
         setPayslips(response.data.slice(0, 3)) // Show latest 3

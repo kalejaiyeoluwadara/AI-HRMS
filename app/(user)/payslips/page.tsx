@@ -13,12 +13,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payslipApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { Eye, Download } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import type { Payslip } from "@/types"
 
 export default function PayslipsPage() {
+  const token = useBackendToken()
   const [payslips, setPayslips] = useState<Payslip[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -28,7 +30,7 @@ export default function PayslipsPage() {
 
   const loadPayslips = async () => {
     try {
-      const response = await payslipApi.getAll()
+      const response = await payslipApi.getAll(token)
       if (response.success && response.data) {
         setPayslips(response.data)
       }
@@ -41,7 +43,7 @@ export default function PayslipsPage() {
 
   const handleDownload = async (id: string) => {
     try {
-      const blob = await payslipApi.download(id)
+      const blob = await payslipApi.download(id, token)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url

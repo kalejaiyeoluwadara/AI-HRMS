@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { userApi, employeeApi, payrollApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { Users, DollarSign, FileText, Shield, UserPlus, Clock, UserCheck, Settings } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
 export default function SuperAdminDashboard() {
+  const token = useBackendToken()
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalEmployees: 0,
@@ -28,14 +30,14 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     loadStats()
     loadAuditLogs()
-  }, [])
+  }, [token])
 
   const loadStats = async () => {
     try {
       const [usersRes, employeesRes, payrollRes] = await Promise.all([
-        userApi.getAll(),
-        employeeApi.getAll(),
-        payrollApi.getAll(),
+        userApi.getAll(token),
+        employeeApi.getAll(token),
+        payrollApi.getAll(token),
       ])
 
       const pending = payrollRes.success && payrollRes.data
@@ -127,8 +129,8 @@ export default function SuperAdminDashboard() {
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               {[
-                { label: "Manage Users", href: "/users", Icon: Shield },
-                { label: "Create User Account", href: "/users", Icon: UserPlus },
+                { label: "Manage Users", href: "/dashboard/users", Icon: Shield },
+                { label: "Create User Account", href: "/dashboard/users", Icon: UserPlus },
                 { label: "Manage Employees", href: "/employees", Icon: Users },
                 { label: "View Payroll", href: "/payroll", Icon: DollarSign },
                 { label: "All Payslips", href: "/payslips", Icon: FileText },

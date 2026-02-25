@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payrollApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { DollarSign, AlertCircle, FileCheck, Clock } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
 export default function PayrollOfficerDashboard() {
+  const token = useBackendToken()
   const [stats, setStats] = useState({
     pendingApprovals: 0,
     totalRuns: 0,
@@ -20,11 +22,11 @@ export default function PayrollOfficerDashboard() {
 
   useEffect(() => {
     loadStats()
-  }, [])
+  }, [token])
 
   const loadStats = async () => {
     try {
-      const response = await payrollApi.getAll()
+      const response = await payrollApi.getAll(token)
 
       if (response.success && response.data) {
         const pending = response.data.filter((p) => p.status === "pending").length

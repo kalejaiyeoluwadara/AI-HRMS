@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { employeeApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { toast } from "sonner"
 import { Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -18,6 +19,7 @@ export default function EditEmployeePage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
+  const token = useBackendToken()
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(true)
   const [formData, setFormData] = useState({
@@ -32,11 +34,11 @@ export default function EditEmployeePage() {
 
   useEffect(() => {
     loadEmployee()
-  }, [])
+  }, [id, token])
 
   const loadEmployee = async () => {
     try {
-      const response = await employeeApi.getById(id)
+      const response = await employeeApi.getById(id, token)
       if (response.success && response.data) {
         const emp = response.data
         setFormData({
@@ -62,15 +64,19 @@ export default function EditEmployeePage() {
     setLoading(true)
 
     try {
-      const response = await employeeApi.update(id, {
-        name: formData.name,
-        email: formData.email,
-        jobRole: formData.jobRole,
-        salary: parseFloat(formData.salary),
-        allowances: parseFloat(formData.allowances),
-        deductions: parseFloat(formData.deductions),
-        employmentStatus: formData.employmentStatus as "active" | "inactive" | "terminated",
-      })
+      const response = await employeeApi.update(
+        id,
+        {
+          name: formData.name,
+          email: formData.email,
+          jobRole: formData.jobRole,
+          salary: parseFloat(formData.salary),
+          allowances: parseFloat(formData.allowances),
+          deductions: parseFloat(formData.deductions),
+          employmentStatus: formData.employmentStatus as "active" | "inactive" | "terminated",
+        },
+        token
+      )
 
       if (response.success) {
         toast.success("Employee updated successfully")

@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { employeeApi, payrollApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { Users, DollarSign, FileText, AlertCircle, Clock, UserCheck, Settings } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
 export default function AdminDashboard() {
+  const token = useBackendToken()
   const [stats, setStats] = useState({
     totalEmployees: 0,
     pendingPayroll: 0,
@@ -28,13 +30,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadStats()
     loadAuditLogs()
-  }, [])
+  }, [token])
 
   const loadStats = async () => {
     try {
       const [employeesRes, payrollRes] = await Promise.all([
-        employeeApi.getAll(),
-        payrollApi.getAll(),
+        employeeApi.getAll(token),
+        payrollApi.getAll(token),
       ])
 
       if (employeesRes.success && employeesRes.data) {
@@ -127,7 +129,7 @@ export default function AdminDashboard() {
               <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <Link href="/users">
+              <Link href="/dashboard/users">
                 <Button variant="outline" className="w-full justify-start">
                   <Users className="mr-2 h-4 w-4" />
                   Manage Users

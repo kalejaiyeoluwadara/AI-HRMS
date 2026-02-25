@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payslipApi } from "@/lib/api"
-import { useAuthUser } from "@/components/hooks/use-auth-user"
+import { useAuthUser, useBackendToken } from "@/components/hooks/use-auth-user"
 import { Download, FileText, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import type { Payslip } from "@/types"
-import { regeneratePayslips } from "@/lib/mockData"
 
 export default function MyPayslipsPage() {
   const user = useAuthUser()
+  const token = useBackendToken()
   const [payslips, setPayslips] = useState<Payslip[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -22,23 +22,15 @@ export default function MyPayslipsPage() {
 
   const loadPayslips = async () => {
     try {
-      const response = await payslipApi.getMyPayslips(user)
-      console.log("📊 Payslip API response:", response)
+      const response = await payslipApi.getMyPayslips(user, token)
       if (response.success && response.data) {
-        console.log(`✅ Loaded ${response.data.length} payslips`)
-        // Sort payslips by year and month (most recent first)
-        const sortedPayslips = response.data.sort((a, b) => {
-          if (a.year !== b.year) {
-            return b.year - a.year
-          }
+        const sortedPayslips = [...response.data].sort((a, b) => {
+          if (a.year !== b.year) return b.year - a.year
           return parseInt(b.month) - parseInt(a.month)
         })
         setPayslips(sortedPayslips)
-      } else {
-        console.warn("⚠️ Payslip API returned no data:", response.message)
       }
     } catch (error) {
-      console.error("❌ Failed to load payslips:", error)
       toast.error("Failed to load payslips")
     } finally {
       setLoading(false)
@@ -47,7 +39,7 @@ export default function MyPayslipsPage() {
 
   const handleDownload = async (id: string) => {
     try {
-      const blob = await payslipApi.download(id)
+      const blob = await payslipApi.download(id, token)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
@@ -69,26 +61,9 @@ export default function MyPayslipsPage() {
     }).format(amount)
   }
 
-  const handleRefreshPayslips = () => {
-    if (confirm("This will regenerate payslips with fresh mock data. Continue?")) {
-      console.log("🔄 Starting payslip regeneration...")
-      
-      // First, clear old payslips completely
-      if (typeof window !== "undefined") {
-        localStorage.removeItem('hrms_mock_payslips');
-        console.log("🗑️ Cleared old payslips from localStorage");
-      }
-      
-      // Now regenerate
-      regeneratePayslips()
-      toast.success("Payslips regenerated! Refreshing...")
-      
-      setTimeout(() => {
-        console.log("🔃 Reloading payslips from API...")
-        setLoading(true)
-        loadPayslips()
-      }, 500)
-    }
+  const handleRefresh = () => {
+    setLoading(true)
+    loadPayslips()
   }
 
   return (
@@ -99,14 +74,14 @@ export default function MyPayslipsPage() {
             <h1 className="text-3xl font-bold">My Payslips</h1>
             <p className="text-muted-foreground">View and download your payslips</p>
           </div>
-          {payslips.length === 0 && !loading && (
+          {!loading && (
             <Button
               variant="outline"
               size="sm"
-              onClick={handleRefreshPayslips}
+              onClick={handleRefresh}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Generate Payslips
+              Refresh
             </Button>
           )}
         </div>
@@ -119,14 +94,14 @@ export default function MyPayslipsPage() {
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-4">No payslips available</p>
               <p className="text-sm text-muted-foreground mb-4">
-                Click the button below to generate mock payslips for testing
+                Payslips are generated when payroll is run. Contact your administrator if you expect to see payslips here.
               </p>
               <Button
-                variant="default"
-                onClick={handleRefreshPayslips}
+                variant="outline"
+                onClick={handleRefresh}
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Generate Mock Payslips
+                Refresh
               </Button>
             </CardContent>
           </Card>

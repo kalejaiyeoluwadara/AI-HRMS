@@ -14,24 +14,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payrollApi } from "@/lib/api"
+import { useAuthUser, useBackendToken } from "@/components/hooks/use-auth-user"
 import { Eye, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { useAuthUser } from "@/components/hooks/use-auth-user"
 import type { PayrollRun } from "@/types"
 
 export default function PayrollPage() {
   const user = useAuthUser()
+  const token = useBackendToken()
   const [payrolls, setPayrolls] = useState<PayrollRun[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadPayrolls()
-  }, [])
+  }, [token])
 
   const loadPayrolls = async () => {
     try {
-      const response = await payrollApi.getAll()
+      const response = await payrollApi.getAll(token)
       if (response.success && response.data) {
         setPayrolls(response.data)
       }

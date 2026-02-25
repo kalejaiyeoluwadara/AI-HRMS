@@ -19,7 +19,7 @@ import { payrollApi } from "@/lib/api"
 import { toast } from "sonner"
 import { ArrowLeft, AlertCircle, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
-import { useAuthUser } from "@/components/hooks/use-auth-user"
+import { useAuthUser, useBackendToken } from "@/components/hooks/use-auth-user"
 import type { PayrollRun, PayrollDetail } from "@/types"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { InputDialog } from "@/components/ui/input-dialog"
@@ -29,6 +29,7 @@ export default function PayrollDetailPage() {
   const params = useParams()
   const id = params.id as string
   const user = useAuthUser()
+  const token = useBackendToken()
   const [payroll, setPayroll] = useState<PayrollRun | null>(null)
   const [details, setDetails] = useState<PayrollDetail[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,11 +39,11 @@ export default function PayrollDetailPage() {
 
   useEffect(() => {
     loadPayroll()
-  }, [id])
+  }, [id, token])
 
   const loadPayroll = async () => {
     try {
-      const response = await payrollApi.getById(id)
+      const response = await payrollApi.getById(id, token)
       if (response.success && response.data) {
         setPayroll(response.data)
         setDetails(response.data.details || [])
@@ -58,7 +59,7 @@ export default function PayrollDetailPage() {
   const handleApprove = async () => {
     setActionLoading(true)
     try {
-      const response = await payrollApi.approve(id)
+      const response = await payrollApi.approve(id, token)
       if (response.success) {
         toast.success("Payroll approved successfully")
         loadPayroll()
@@ -76,7 +77,7 @@ export default function PayrollDetailPage() {
   const handleReject = async (reason: string) => {
     setActionLoading(true)
     try {
-      const response = await payrollApi.reject(id, reason)
+      const response = await payrollApi.reject(id, reason, token)
       if (response.success) {
         toast.success("Payroll rejected")
         loadPayroll()
@@ -98,7 +99,7 @@ export default function PayrollDetailPage() {
     }).format(amount)
   }
 
-  const canApprove = user?.role === "admin" && payroll?.status === "pending"
+  const canApprove = (user?.role === "admin" || user?.role === "superadmin") && payroll?.status === "pending"
 
   if (loading) {
     return (

@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { employeeApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -22,6 +23,7 @@ import type { Employee } from "@/types"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export default function EmployeesPage() {
+  const token = useBackendToken()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -32,11 +34,11 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     loadEmployees()
-  }, [])
+  }, [token])
 
   const loadEmployees = async () => {
     try {
-      const response = await employeeApi.getAll()
+      const response = await employeeApi.getAll(token)
       if (response.success && response.data) {
         setEmployees(response.data)
       }
@@ -51,7 +53,7 @@ export default function EmployeesPage() {
     if (!deleteDialog.id) return
 
     try {
-      const response = await employeeApi.delete(deleteDialog.id)
+      const response = await employeeApi.delete(deleteDialog.id, token)
       if (response.success) {
         toast.success("Employee deleted successfully")
         loadEmployees()

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payrollApi } from "@/lib/api"
+import { useBackendToken } from "@/components/hooks/use-auth-user"
 import { toast } from "sonner"
 import { Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -30,6 +31,7 @@ const months = [
 
 export default function RunPayrollPage() {
   const router = useRouter()
+  const token = useBackendToken()
   const [loading, setLoading] = useState(false)
   const currentDate = new Date()
   const [formData, setFormData] = useState({
@@ -44,7 +46,8 @@ export default function RunPayrollPage() {
     try {
       const response = await payrollApi.run(
         formData.month,
-        parseInt(formData.year)
+        parseInt(formData.year),
+        token
       )
 
       if (response.success && response.data) {
@@ -53,8 +56,9 @@ export default function RunPayrollPage() {
       } else {
         toast.error(response.message || "Failed to run payroll")
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "An error occurred")
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An error occurred"
+      toast.error(message)
     } finally {
       setLoading(false)
     }

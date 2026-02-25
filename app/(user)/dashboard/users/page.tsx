@@ -15,9 +15,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { userApi } from "@/lib/api"
+import { useAuthUser, useBackendToken } from "@/components/hooks/use-auth-user"
 import { Plus, Search, Trash2, UserPlus } from "lucide-react"
 import { toast } from "sonner"
-import { useAuthUser } from "@/components/hooks/use-auth-user"
 import type { User, UserRole } from "@/types"
 import {
   Dialog,
@@ -34,6 +34,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export default function UsersPage() {
   const currentUser = useAuthUser()
+  const token = useBackendToken()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -51,11 +52,11 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadUsers()
-  }, [])
+  }, [token])
 
   const loadUsers = async () => {
     try {
-      const response = await userApi.getAll()
+      const response = await userApi.getAll(token)
       if (response.success && response.data) {
         setUsers(response.data)
       }
@@ -71,7 +72,7 @@ export default function UsersPage() {
     setCreateLoading(true)
 
     try {
-      const response = await userApi.create(formData, currentUser)
+      const response = await userApi.create(formData, currentUser, token)
       if (response.success) {
         toast.success("User created successfully")
         setIsCreateDialogOpen(false)
@@ -91,7 +92,7 @@ export default function UsersPage() {
     if (!deleteDialog.id) return
 
     try {
-      const response = await userApi.delete(deleteDialog.id, currentUser)
+      const response = await userApi.delete(deleteDialog.id, currentUser, token)
       if (response.success) {
         toast.success("User deleted successfully")
         loadUsers()
