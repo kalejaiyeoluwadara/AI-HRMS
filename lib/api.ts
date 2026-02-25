@@ -1,46 +1,13 @@
 import type { ApiResponse, User, UserRole, Employee, PayrollRun, PayrollDetail, Payslip, Grade, AllowanceType, DeductionType } from "@/types";
 import { mockDataStore, delay, generateId } from "./mockData";
-import { getStoredUser } from "./auth";
 
 // Mock API - simulates backend API calls using localStorage
-// All functions maintain the same interface as before for compatibility
+// Auth is handled by NextAuth; pass user from useAuthUser() where needed
 
-// Auth API
+// Auth API (legacy - login/register handled by NextAuth)
 export const authApi = {
-  login: async (email: string, password: string): Promise<ApiResponse<{ user: User; token: string }>> => {
-    await delay();
-    
-    // In mock mode, any password works, but email must match a user
-    // Trim and lowercase email for matching
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = mockDataStore.findUserByEmail(normalizedEmail);
-    
-    if (!user) {
-      // Get all users for debugging (remove in production)
-      const allUsers = mockDataStore.getUsers();
-      console.log("Available users:", allUsers.map(u => u.email));
-      
-      return {
-        success: false,
-        message: `Invalid email or password. Available accounts: ${allUsers.map(u => u.email).join(", ")}`,
-        error: "Invalid credentials",
-      };
-    }
-
-    // Generate a mock token
-    const token = `mock_token_${user.id}_${Date.now()}`;
-
-    return {
-      success: true,
-      data: { user, token },
-      message: "Login successful",
-    };
-  },
-
   register: async (data: { name: string; email: string; password: string; role: string }): Promise<ApiResponse<{ user: User; token: string }>> => {
     await delay();
-
-    // Registration is disabled - only admins/superadmins can create users through user management
     return {
       success: false,
       message: "Registration is disabled. Please contact your administrator.",
@@ -48,10 +15,8 @@ export const authApi = {
     };
   },
 
-  getCurrentUser: async (): Promise<ApiResponse<User>> => {
+  getCurrentUser: async (user: User | null): Promise<ApiResponse<User>> => {
     await delay();
-
-    const user = getStoredUser();
     if (!user) {
       return {
         success: false,
@@ -59,8 +24,6 @@ export const authApi = {
         error: "Unauthorized",
       };
     }
-
-    // Verify user still exists in mock data
     const foundUser = mockDataStore.findUserById(user.id);
     if (!foundUser) {
       return {
@@ -69,7 +32,6 @@ export const authApi = {
         error: "Not found",
       };
     }
-
     return {
       success: true,
       data: foundUser,
@@ -344,12 +306,9 @@ export const payrollApi = {
 
 // Payslip API
 export const payslipApi = {
-  getMyPayslips: async (): Promise<ApiResponse<Payslip[]>> => {
+  getMyPayslips: async (user: User | null): Promise<ApiResponse<Payslip[]>> => {
     await delay();
-    
-    const user = getStoredUser();
-    console.log("👤 Current user:", user);
-    
+
     if (!user) {
       return {
         success: false,
@@ -358,16 +317,8 @@ export const payslipApi = {
       };
     }
 
-    // Find employee by email (assuming email matches)
-    const allEmployees = mockDataStore.getEmployees();
-    console.log("👥 All employees in storage:", allEmployees.length, allEmployees.map(e => ({ id: e.id, email: e.email, name: e.name })));
-    
-    const employee = allEmployees.find((e) => e.email === user.email);
-    console.log("🔍 Looking for employee with email:", user.email);
-    console.log("✓ Found employee:", employee);
-    
+    const employee = mockDataStore.getEmployees().find((e) => e.email === user.email);
     if (!employee) {
-      console.warn("⚠️ No employee record found for user:", user.email);
       return {
         success: true,
         data: [],
@@ -375,13 +326,7 @@ export const payslipApi = {
       };
     }
 
-    const allPayslips = mockDataStore.getPayslips();
-    console.log("📋 Total payslips in storage:", allPayslips.length);
-    console.log("📋 Sample payslip IDs:", allPayslips.slice(0, 3).map(p => ({ id: p.id, empId: p.employeeId, name: p.employeeName })));
-    
     const payslips = mockDataStore.getPayslipsByEmployeeId(employee.id);
-    console.log(`✅ Found ${payslips.length} payslips for employee ${employee.id} (${employee.name})`);
-    
     return {
       success: true,
       data: payslips,
@@ -454,10 +399,9 @@ export const userApi = {
     };
   },
 
-  create: async (data: { name: string; email: string; role: UserRole }): Promise<ApiResponse<User>> => {
+  create: async (data: { name: string; email: string; role: UserRole }, currentUser: User | null): Promise<ApiResponse<User>> => {
     await delay();
 
-    const currentUser = getStoredUser();
     if (!currentUser) {
       return {
         success: false,
@@ -503,10 +447,9 @@ export const userApi = {
     };
   },
 
-  delete: async (id: string): Promise<ApiResponse<void>> => {
+  delete: async (id: string, currentUser: User | null): Promise<ApiResponse<void>> => {
     await delay();
 
-    const currentUser = getStoredUser();
     if (!currentUser) {
       return {
         success: false,

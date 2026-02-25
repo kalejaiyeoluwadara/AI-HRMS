@@ -17,7 +17,7 @@ import { ProtectedRoute } from "@/components/layout/protected-route"
 import { userApi } from "@/lib/api"
 import { Plus, Search, Trash2, UserPlus } from "lucide-react"
 import { toast } from "sonner"
-import { getStoredUser } from "@/lib/auth"
+import { useAuthUser } from "@/components/hooks/use-auth-user"
 import type { User, UserRole } from "@/types"
 import {
   Dialog,
@@ -33,7 +33,7 @@ import { Loader2 } from "lucide-react"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export default function UsersPage() {
-  const currentUser = getStoredUser()
+  const currentUser = useAuthUser()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -71,7 +71,7 @@ export default function UsersPage() {
     setCreateLoading(true)
 
     try {
-      const response = await userApi.create(formData)
+      const response = await userApi.create(formData, currentUser)
       if (response.success) {
         toast.success("User created successfully")
         setIsCreateDialogOpen(false)
@@ -91,7 +91,7 @@ export default function UsersPage() {
     if (!deleteDialog.id) return
 
     try {
-      const response = await userApi.delete(deleteDialog.id)
+      const response = await userApi.delete(deleteDialog.id, currentUser)
       if (response.success) {
         toast.success("User deleted successfully")
         loadUsers()

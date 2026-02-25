@@ -9,14 +9,14 @@ import { payslipApi } from "@/lib/api"
 import { toast } from "sonner"
 import { ArrowLeft, Download } from "lucide-react"
 import Link from "next/link"
-import { getStoredUser } from "@/lib/auth"
+import { useAuthUser } from "@/components/hooks/use-auth-user"
 import type { Payslip } from "@/types"
 
 export default function PayslipDetailPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
-  const user = getStoredUser()
+  const user = useAuthUser()
   const [payslip, setPayslip] = useState<Payslip | null>(null)
   const [loading, setLoading] = useState(true)
 

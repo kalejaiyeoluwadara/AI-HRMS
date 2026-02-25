@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { getStoredUser } from "@/lib/auth"
-import { cn } from "@/lib/utils"
-import type { UserRole } from "@/types"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuthUser } from "@/components/hooks/use-auth-user";
+import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types";
 import {
   LayoutDashboard,
   Users,
@@ -13,9 +13,12 @@ import {
   FileText,
   Bot,
   Settings,
-} from "lucide-react"
+} from "lucide-react";
 
-const roleRoutes: Record<UserRole, { label: string; path: string; icon: React.ComponentType<{ className?: string }> }[]> = {
+const roleRoutes: Record<
+  UserRole,
+  { label: string; path: string; icon: React.ComponentType<{ className?: string }> }[]
+> = {
   superadmin: [
     { label: "Dashboard", path: "/dashboard/superadmin", icon: LayoutDashboard },
     { label: "Users", path: "/dashboard/users", icon: Users },
@@ -41,28 +44,29 @@ const roleRoutes: Record<UserRole, { label: string; path: string; icon: React.Co
     { label: "Dashboard", path: "/dashboard/employee", icon: LayoutDashboard },
     { label: "My Payslips", path: "/payslips/my", icon: FileText },
   ],
-}
+};
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const user = getStoredUser()
+  const pathname = usePathname();
+  const user = useAuthUser();
 
   if (!user || pathname === "/login" || pathname === "/register") {
-    return null
+    return null;
   }
 
-  const routes = roleRoutes[user.role] || []
+  const routes = roleRoutes[user.role] || [];
 
   return (
     <aside className="w-full p-4 min-h-screen border-none shadow-sm bg-background sticky top-0">
-       <Link href="/" className="text-xl mb-8 pt-4 font-bold">
-          HRMS
-        </Link>
+      <Link href="/" className="text-xl mb-8 pt-4 font-bold">
+        HRMS
+      </Link>
       <nav className="flex flex-col pt-12 gap-1">
         {routes.map((route) => {
-          const Icon = route.icon
-          const isActive = pathname === route.path || pathname.startsWith(route.path + "/")
-          
+          const Icon = route.icon;
+          const isActive =
+            pathname === route.path || pathname.startsWith(route.path + "/");
+
           return (
             <Link
               key={route.path}
@@ -77,9 +81,9 @@ export function Sidebar() {
               <Icon className="h-5 w-5" />
               <span>{route.label}</span>
             </Link>
-          )
+          );
         })}
       </nav>
     </aside>
-  )
+  );
 }

@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { payslipApi } from "@/lib/api"
+import { useAuthUser } from "@/components/hooks/use-auth-user"
 import { Download, FileText, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import type { Payslip } from "@/types"
 import { regeneratePayslips } from "@/lib/mockData"
 
 export default function MyPayslipsPage() {
+  const user = useAuthUser()
   const [payslips, setPayslips] = useState<Payslip[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -20,7 +22,7 @@ export default function MyPayslipsPage() {
 
   const loadPayslips = async () => {
     try {
-      const response = await payslipApi.getMyPayslips()
+      const response = await payslipApi.getMyPayslips(user)
       console.log("📊 Payslip API response:", response)
       if (response.success && response.data) {
         console.log(`✅ Loaded ${response.data.length} payslips`)

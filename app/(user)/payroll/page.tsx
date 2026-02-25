@@ -17,11 +17,11 @@ import { payrollApi } from "@/lib/api"
 import { Eye, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { getStoredUser } from "@/lib/auth"
+import { useAuthUser } from "@/components/hooks/use-auth-user"
 import type { PayrollRun } from "@/types"
 
 export default function PayrollPage() {
-  const user = getStoredUser()
+  const user = useAuthUser()
   const [payrolls, setPayrolls] = useState<PayrollRun[]>([])
   const [loading, setLoading] = useState(true)
 

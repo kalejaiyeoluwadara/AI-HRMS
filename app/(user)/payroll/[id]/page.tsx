@@ -19,7 +19,7 @@ import { payrollApi } from "@/lib/api"
 import { toast } from "sonner"
 import { ArrowLeft, AlertCircle, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
-import { getStoredUser } from "@/lib/auth"
+import { useAuthUser } from "@/components/hooks/use-auth-user"
 import type { PayrollRun, PayrollDetail } from "@/types"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { InputDialog } from "@/components/ui/input-dialog"
@@ -28,7 +28,7 @@ export default function PayrollDetailPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
-  const user = getStoredUser()
+  const user = useAuthUser()
   const [payroll, setPayroll] = useState<PayrollRun | null>(null)
   const [details, setDetails] = useState<PayrollDetail[]>([])
   const [loading, setLoading] = useState(true)

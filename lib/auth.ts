@@ -1,37 +1,19 @@
 import type { User } from "@/types";
 
-export const getStoredUser = (): User | null => {
-  if (typeof window === "undefined") return null;
-  const userStr = localStorage.getItem("user");
-  if (!userStr) return null;
-  try {
-    return JSON.parse(userStr);
-  } catch {
-    return null;
-  }
-};
-
-export const setStoredUser = (user: User): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("user", JSON.stringify(user));
-};
-
-export const getStoredToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
-};
-
-export const setStoredToken = (token: string): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("token", token);
-};
-
-export const clearAuth = (): void => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-};
-
-export const isAuthenticated = (): boolean => {
-  return !!getStoredToken() && !!getStoredUser();
-};
+/**
+ * Convert NextAuth session user to our User type.
+ */
+export function sessionUserToUser(sessionUser: {
+  id?: string;
+  email?: string | null;
+  name?: string | null;
+  role?: string;
+}): User | null {
+  if (!sessionUser?.id || !sessionUser?.role) return null;
+  return {
+    id: sessionUser.id,
+    email: sessionUser.email || "",
+    name: sessionUser.name || "",
+    role: sessionUser.role as User["role"],
+  };
+}

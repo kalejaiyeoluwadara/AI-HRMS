@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { clearAuth, getStoredUser } from "@/lib/auth"
-import { LogOut, User } from "lucide-react"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { LogOut, User } from "lucide-react";
+import { useAuthUser } from "@/components/hooks/use-auth-user";
 
 export function Navbar() {
-  const pathname = usePathname()
-  const user = getStoredUser()
+  const pathname = usePathname();
+  const user = useAuthUser();
 
   if (!user || pathname === "/login" || pathname === "/register") {
-    return null
+    return null;
   }
 
   const handleLogout = () => {
-    clearAuth()
-    window.location.href = "/login"
-  }
+    signOut({ callbackUrl: "/login" });
+  };
 
   return (
     <nav className="border-none shadow-sm bg-background">
@@ -38,5 +38,5 @@ export function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
